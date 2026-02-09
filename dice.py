@@ -55,27 +55,18 @@ class DiceSystem:
                     return False
             return True
             
-        elif req_type == 'boss_seq_pair':
-            # 1-2-3 e AA. Requer estratégia complexa.
-            # Tenta achar um par, remove, verifica se sobra sequencia
-            for val, count in counts.items():
-                if count >= 2:
-                    remains = list(dice)
-                    remains.remove(val)
-                    remains.remove(val)
-                    r_vals = sorted(list(set(remains)))
-                    if len(r_vals) >= 3:
-                        is_seq = True
-                        for i in range(len(r_vals)-1):
-                            if r_vals[i+1] != r_vals[i]+1:
-                                is_seq = False
-                        if is_seq: return True
-            return False
-
         elif req_type == 'all_odd':
             return all(d % 2 != 0 for d in dice)
             
         elif req_type == 'all_even':
             return all(d % 2 == 0 for d in dice)
+
+        # --- NOVA REGRA DO BOSS ---
+        elif req_type == 'boss_special':
+            # Duas trincas somando 21 exatos (Implica 6,6,6 + 1,1,1)
+            # Requer ter pelo menos três 6 e três 1
+            has_three_6 = counts[6] >= 3
+            has_three_1 = counts[1] >= 3
+            return has_three_6 and has_three_1
 
         return False
