@@ -8,14 +8,14 @@ class GameEngine:
         self.deck = deck
         self.ui = ui
         self.active_enemies = []
-        random.shuffle(self.deck)
+        # O deck já vem embaralhado do enemies.py com o boss no final
 
     def start(self):
         self.ui.clear_screen()
         self.ui.print_header()
         
         while self.player.health > 0:
-            # Vitória
+            # Vitória: Só ganha se deck vazio E sem inimigos ativos
             if not self.deck and not self.active_enemies:
                 self.ui.print_message("\n=== VITÓRIA LENDÁRIA! VOCÊ SE TORNOU O SENHOR DA GUERRA ===")
                 break 
@@ -27,8 +27,16 @@ class GameEngine:
             self.ui.print_status(self.player)
             self.ui.print_enemies(self.active_enemies)
 
-            # --- FASES ---
-            self.phase_prepare()
+            # --- LÓGICA DE MORTE SÚBITA ---
+            # Se não tem mais cartas no baralho e só resta 1 inimigo (o Boss ou o último),
+            # Pula a fase de preparação.
+            is_sudden_death = (not self.deck and len(self.active_enemies) == 1)
+
+            if not is_sudden_death:
+                self.phase_prepare()
+            else:
+                self.ui.print_message("\n!!! MORTE SÚBITA: SEM FASE DE PREPARAÇÃO !!!")
+                self.ui.print_message("Recursos esgotados. É matar ou morrer.")
             
             if self.player.health > 0:
                 self.phase_defend()
@@ -148,7 +156,7 @@ class GameEngine:
 
     def phase_attack(self):
         self.ui.print_message("\n--- FASE 3: ATACAR ---")
-        
+
         use_fury = 0
         if self.player.fury > 0:
             q = self.ui.get_input(f"Usar quantos de Fúria? (Max {self.player.fury}): ")
@@ -186,14 +194,19 @@ class GameEngine:
                 except: pass
 
             elif action.lower() == 'm' and self.player.health > 1:
-                # Item: Machado de Verdugo (+1 Dano/Valor) ou Engrenagem
-                # Lógica básica do jogo: Gastar vida para +/- 1
+                # CORREÇÃO: Lógica de Carrossel (Wrap Around)
                 self.player.take_damage(1)
                 try:
-                    idx = int(self.ui.get_input("Qual dado alterar? (1-N): ")) - 1
-                    mod = int(self.ui.get_input("Somar (+1) ou Subtrair (-1)? "))
-                    if 0 <= idx < len(current_dice):
-                        current_dice[idx] += mod
+                    idx_str = self.ui.get_input("Qual dado alterar? (1-N): ")
+                    if idx_str.isdigit():
+                        idx = int(idx_str) - 1
+                        mod_str = self.ui.get_input("Somar (+1) ou Subtrair (-1)? ")
+                        mod = int(mod_str)
+                        if 0 <= idx < len(current_dice):
+                            # Fórmula mágica: Garante que fique entre 1 e 6
+                            # Se for 6 + 1 = 7 -> vira 1
+                            # Se for 1 - 1 = 0 -> vira 6
+                            current_dice[idx] = ((current_dice[idx] - 1 + mod) % 6) + 1
                 except: pass
 
             elif action.lower() == 'a':
