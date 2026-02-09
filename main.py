@@ -18,9 +18,9 @@ def main():
             start_glory = 0
             
             if char_choice == '1':
-                player_name = "Rodolfo, o 'Mão de Alface'"
+                player_name = "Bartolomeu, o 'Mão de Alface'"
                 start_fury = 1 # Bônus da Isabelle (Mutineer)
-                ui.print_message("Você escolheu RODOLFO! Começa com +1 Fúria.")
+                ui.print_message("Você escolheu BARTOLOMEU! Começa com +1 Fúria.")
             else:
                 player_name = "Gertrudes, a 'Cobradora'"
                 start_glory = 2 # Bônus do Toussaint (Mutineer)
