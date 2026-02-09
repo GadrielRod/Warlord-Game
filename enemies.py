@@ -1,3 +1,5 @@
+import random
+
 class Loot:
     def __init__(self, name, effect_desc, passive=True):
         self.name = name
@@ -26,7 +28,7 @@ class Enemy:
 def create_deck():
     deck = []
     
-    # --- INIMIGOS BÁSICOS ---
+    # --- INIMIGOS COMUNS ---
     deck.append(Enemy("Besteiro Real", "bow", 2, "sum", 20, "Soma >= 20", 
                       Loot("Aljava Sem Fim", "Custo de Glória para rerrolar reduzido em 1")))
     
@@ -51,7 +53,6 @@ def create_deck():
     deck.append(Enemy("General de Guerra", "bow", 3, "mixed_pairs", 3, "3 Pares (AA-BB-CC)", 
                       Loot("Estandarte de Guerra", "Começa turno com +1 Foco (Rerrolar 1)")))
 
-    # --- INIMIGOS AVANÇADOS ---
     deck.append(Enemy("Monge Renegado", "sword", 3, "all_odd", 0, "Todos Ímpares", 
                       Loot("Ervas Medicinais", "Cura custa 5 dados (invés de 6)")))
                       
@@ -63,9 +64,14 @@ def create_deck():
                       
     deck.append(Enemy("Gigante da Montanha", "sword", 5, "kind", 5, "Quina (AAAAA)", 
                       Loot("Manopla de Força", "Pares geram +1 Fúria extra")))
-                      
-    # --- BOSS ---
-    deck.append(Enemy("O SENHOR DA GUERRA", "boss", 6, "boss_seq_pair", 0, "Seq(3) + Par", 
-                      Loot("A Coroa do Rei", "VITÓRIA IMEDIATA")))
+    
+    # Embaralha os inimigos comuns PRIMEIRO
+    random.shuffle(deck)
+
+    # --- BOSS (Sempre por último) ---
+    boss = Enemy("O SENHOR DA GUERRA", "boss", 6, "boss_special", 0, "Trinca(6) + Trinca(1)", 
+                 Loot("A Coroa do Rei", "Troféu Final"))
+    
+    deck.append(boss)
 
     return deck
