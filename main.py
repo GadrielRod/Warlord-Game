@@ -16,13 +16,18 @@ def main():
             player_name = "Guerreiro Anônimo"
             start_fury = 0
             start_glory = 0
+            start_health = 0
             
             if char_choice == '1':
                 player_name = "Bartolomeu, o 'Mão de Alface'"
                 start_fury = 1 # Bônus da Isabelle (Mutineer)
                 ui.print_message("Você escolheu BARTOLOMEU! Começa com +1 Fúria.")
+            elif char_choice == '2':
+                player_name = "Jaiminho, 'Corpo Mole'"
+                start_health = 10
+                ui.print_message("Você escolheu JAIMINHO! Começa com +2 de vida.")
             else:
-                player_name = "Gertrudes, a 'Cobradora'"
+                player_name = "Gertrudes, a 'Cobradora de Dívidas'"
                 start_glory = 2 # Bônus do Toussaint (Mutineer)
                 ui.print_message("Você escolheu GERTRUDES! Começa com +2 Glória.")
             
@@ -32,6 +37,7 @@ def main():
             player = Player(name=player_name)
             player.fury = start_fury
             player.glory = start_glory
+            player.health = start_health
             
             deck = create_deck()
             engine = GameEngine(player, deck, ui)
