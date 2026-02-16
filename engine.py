@@ -60,7 +60,7 @@ class GameEngine:
         dice = DiceSystem.roll(5)
         self.ui.print_dice(dice)
         
-        # Converter para FOCO (Prata)
+        # Lógica de conversão de FOCO (mantida igual)
         self.ui.print_message("Digite índices dos dados para virar FOCO (ex: '1 3') ou ENTER para pular.")
         
         chosen_indices = []
@@ -89,26 +89,49 @@ class GameEngine:
         if focus_gain > 0:
             self.ui.print_message(f"Gerou {focus_gain} de Foco.")
         
-        # Cálculos Automáticos
-        heal_pool = sum(d for d in remaining_dice if d == 6)
-        healed = self.player.heal(heal_pool)
-        if healed > 0: self.ui.print_message(f"Recuperou {healed} Vida.")
+        # --- CÁLCULOS ATUALIZADOS ---
         
-        glory_gain = sum(1 for d in remaining_dice if d == 5)
+        # 1. VIDA (Dados 6)
+        sixes = [d for d in remaining_dice if d == 6]
+        heal_amount = len(sixes) # 1 de vida por dado 6
+        
+        # [NOVO] Item: Ervas Medicinais (+1 vida por dado 6)
+        if self.player.has_item("Ervas") and heal_amount > 0:
+            heal_amount += len(sixes) # Dobra a cura basicamente (1 base + 1 extra)
+            self.ui.print_message("Ervas Medicinais potencilizaram a cura!")
+
+        if heal_amount > 0:
+            self.player.health = min(self.player.max_health, self.player.health + heal_amount)
+            self.ui.print_message(f"Recuperou {heal_amount} Vida.")
+        
+        # 2. GLÓRIA (Dados 5)
+        fives = [d for d in remaining_dice if d == 5]
+        glory_gain = len(fives)
+        
+        # [NOVO] Item: Engrenagem Mestra (+1 Glória por dado 5)
+        if self.player.has_item("Engrenagem") and glory_gain > 0:
+            glory_gain += len(fives)
+            self.ui.print_message("Engrenagem Mestra gerou Glória extra!")
+
         self.player.glory += glory_gain
         if glory_gain > 0: self.ui.print_message(f"Ganhou {glory_gain} Glória.")
         
-        # Pares geram Fúria (dados < 5, pois 5 e 6 já foram usados)
+        # 3. FÚRIA (Pares de 1, 2, 3, 4)
         others = [d for d in remaining_dice if d < 5]
         counts = Counter(others)
         fury_gain = 0
         for k, v in counts.items():
             fury_gain += v // 2
         
-        # Item: Manopla de Força (Bônus de Fúria)
+        # Item: Manopla de Força
         if fury_gain > 0 and self.player.has_item("Manopla"):
             fury_gain += 1
             self.ui.print_message("Manopla aumentou sua Fúria.")
+
+        # [NOVO] Item: Machado de Verdugo (+1 Fúria fixo)
+        if self.player.has_item("Machado"):
+            fury_gain += 1
+            self.ui.print_message("Machado de Verdugo gerou +1 Fúria extra.")
 
         self.player.fury += fury_gain
         if fury_gain > 0: self.ui.print_message(f"Gerou {fury_gain} de Fúria.")
@@ -116,6 +139,14 @@ class GameEngine:
     def phase_defend(self):
         self.ui.print_message("\n--- FASE 2: DEFENDER ---")
         
+        # [NOVO] Item: Bomba de Fumaça (Consumível)
+        smoke_bomb = self.player.has_item("Bomba de Fumaça")
+        if smoke_bomb:
+            if self.ui.get_input("Usar Bomba de Fumaça para evitar TODOS ataques? (s/n): ").lower() == 's':
+                self.ui.print_message("PUFF! Você desapareceu na fumaça. Nenhum dano sofrido.")
+                self.player.inventory.remove(smoke_bomb)
+                return # Pula a fase de defesa inteira
+
         for i, enemy in enumerate(self.active_enemies):
             can_hit = False
             if enemy.range_type == 'all': can_hit = True
@@ -123,7 +154,7 @@ class GameEngine:
             elif enemy.range_type == 'mid' and i >= 1: can_hit = True
             elif enemy.range_type == 'near' and i == 2: can_hit = True
             
-            # Item: Amuleto (Bloqueia Longe)
+            # Item: Amuleto (Bloqueia Longe se tiver Glória)
             if enemy.range_type == 'far' and self.player.has_item("Amuleto") and self.player.glory > 0:
                 self.ui.print_message("Amuleto protegeu contra ataque à distância.")
                 can_hit = False
@@ -132,31 +163,39 @@ class GameEngine:
                 self.ui.print_message(f"{enemy.name} ataca!")
                 atk_dice = DiceSystem.roll(enemy.attack_power)
                 
-                # Item: Capa de Esquiva (Rerrolar 1 dado do inimigo)
+                # Item: Capa de Esquiva
                 if self.player.has_item("Capa"):
                     self.ui.print_dice(atk_dice)
                     if self.ui.get_input("Usar Capa de Esquiva para rerrolar 1 dado? (s/n): ").lower() == 's':
-                        atk_dice[0] = random.randint(1, 6) # Rerrola o primeiro
+                        atk_dice[0] = random.randint(1, 6)
                 
                 # Item: Armadura (Reduz dano de Lanças)
                 if enemy.weapon_type == 'spear' and self.player.has_item("Armadura"):
+                    if atk_dice: atk_dice.pop() # Remove um dado do ataque
                     self.ui.print_message("Armadura de Placas absorveu impacto.")
-                    if atk_dice: atk_dice.pop() # Remove um dado
                 
                 self.ui.print_dice(atk_dice)
                 
                 damage = sum(atk_dice) // 4
+                
+                # [NOVO] Item: Aljava Sem Fim (Reduz dano de Arqueiros)
+                if enemy.weapon_type == 'bow' and self.player.has_item("Aljava"):
+                    if damage > 0:
+                        damage = max(0, damage - 1)
+                        self.ui.print_message("Aljava Sem Fim permitiu cobertura: -1 de Dano.")
+
                 if damage > 0:
                     self.ui.print_message(f"Sofreu {damage} de dano!")
                     self.player.take_damage(damage)
                 else:
-                    self.ui.print_message("O ataque errou.")
+                    self.ui.print_message("O ataque errou ou foi bloqueado.")
                 
                 if self.player.health <= 0: return
 
     def phase_attack(self):
         self.ui.print_message("\n--- FASE 3: ATACAR ---")
 
+        # 1. Decisão de uso de Fúria
         use_fury = 0
         if self.player.fury > 0:
             q = self.ui.get_input(f"Usar quantos de Fúria? (Max {self.player.fury}): ")
@@ -171,50 +210,44 @@ class GameEngine:
             self.ui.print_dice(current_dice)
             print(f"Glória: {self.player.glory} | Foco: {self.player.focus} | Fúria: {self.player.fury} | Vida: {self.player.health}")
             
-            action = self.ui.get_input("[A]tacar, [G]lória (Rerrolar Tudo), [F]oco (Rerrolar 1), [M]anipular (Vida): ")
+            # Removida opção [M]anipular pois os itens mudaram de função
+            action = self.ui.get_input("[A]tacar, [G]lória (Rerrolar Tudo - Custo 1), [F]oco (Rerrolar 1): ")
             
-            # Custo de Glória
-            glory_cost = 1
-            if self.player.has_item("Aljava") and self.player.glory > 0:
-                # Simplificação: Como Glória é int, Aljava permite rerrolar de graça se tiver 1? 
-                # Vamos fazer: Aljava permite rerrolar sem gastar se tiver pelo menos 1.
-                glory_cost = 0
+            # --- RERROLAR TUDO (GLÓRIA) ---
+            if action.lower() == 'g':
+                if self.player.glory >= 1:
+                    self.player.glory -= 1
+                    current_dice = DiceSystem.roll(total_dice)
+                    self.ui.print_message("Glória usada! Todos os dados foram rerrolados.")
+                else:
+                    self.ui.print_message("Glória insuficiente!")
 
-            if action.lower() == 'g' and self.player.glory >= 1:
-                if glory_cost > 0: self.player.glory -= 1
-                else: self.ui.print_message("Aljava Sem Fim usada! Glória preservada.")
-                current_dice = DiceSystem.roll(total_dice)
+            # --- RERROLAR UM (FOCO) ---
+            elif action.lower() == 'f':
+                if self.player.focus >= 1:
+                    try:
+                        idx_str = self.ui.get_input("Qual dado rerrolar? (1-N): ")
+                        if idx_str.isdigit():
+                            idx = int(idx_str) - 1
+                            if 0 <= idx < len(current_dice):
+                                self.player.focus -= 1
+                                current_dice[idx] = random.randint(1, 6)
+                                self.ui.print_message("Foco usado! Dado rerrolado.")
+                            else:
+                                self.ui.print_message("Dado inválido.")
+                    except ValueError:
+                         self.ui.print_message("Entrada inválida.")
+                else:
+                    self.ui.print_message("Foco insuficiente!")
 
-            elif action.lower() == 'f' and self.player.focus > 0:
-                self.player.focus -= 1
-                try:
-                    idx = int(self.ui.get_input("Qual dado rerrolar? (1-N): ")) - 1
-                    if 0 <= idx < len(current_dice):
-                        current_dice[idx] = random.randint(1, 6)
-                except: pass
-
-            elif action.lower() == 'm' and self.player.health > 1:
-                # CORREÇÃO: Lógica de Carrossel (Wrap Around)
-                self.player.take_damage(1)
-                try:
-                    idx_str = self.ui.get_input("Qual dado alterar? (1-N): ")
-                    if idx_str.isdigit():
-                        idx = int(idx_str) - 1
-                        mod_str = self.ui.get_input("Somar (+1) ou Subtrair (-1)? ")
-                        mod = int(mod_str)
-                        if 0 <= idx < len(current_dice):
-                            # Fórmula mágica: Garante que fique entre 1 e 6
-                            # Se for 6 + 1 = 7 -> vira 1
-                            # Se for 1 - 1 = 0 -> vira 6
-                            current_dice[idx] = ((current_dice[idx] - 1 + mod) % 6) + 1
-                except: pass
-
+            # --- ATACAR ---
             elif action.lower() == 'a':
                 rerolling = False
+            
             else:
-                print("Opção inválida.")
+                self.ui.print_message("Opção inválida.")
 
-        # Escolher alvo
+        # 2. Escolher alvo e verificar sucesso
         target_idx = self.ui.get_input("Atacar qual inimigo? (1-3 ou 0 cancelar): ")
         if target_idx.isdigit() and int(target_idx) > 0:
             t_idx = int(target_idx) - 1
@@ -227,6 +260,8 @@ class GameEngine:
                     self.ui.print_message(f"INIMIGO DERROTADO: {target.name}")
                     self.player.equip_loot(target.loot, self.ui)
                     self.active_enemies.pop(t_idx)
+                    
+                    # Consome a fúria usada apenas se atacar (seja sucesso ou falha na vdd, mas aqui manteve a logica)
                     self.player.fury -= use_fury 
                     
                     if target.loot.name == "A Coroa do Rei":
@@ -234,5 +269,4 @@ class GameEngine:
                         self.active_enemies = []
                 else:
                     self.ui.print_message("Ataque falhou! Requisitos não atendidos.")
-                    self.player.fury = 0 # Perde a fúria usada
-
+                    self.player.fury -= use_fury # Perde a fúria usada mesmo se falhar
