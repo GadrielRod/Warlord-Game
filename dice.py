@@ -70,3 +70,4 @@ class DiceSystem:
             return has_three_6 and has_three_1
 
         return False
+
