@@ -39,7 +39,6 @@ class UI:
         print(f"DADOS: {' '.join(symbols)}  >>> {dice_list}")
 
     def display_menu(self):
-        self.clear_screen()
         self.print_header()
         print("\n:: MENU PRINCIPAL ::")
         print("1. [INICIAR BATALHA] (Jogar)")
@@ -50,7 +49,6 @@ class UI:
         return input(">> Escolha uma opção: ")
 
     def display_rules(self):
-        self.clear_screen()
         print(":: REGRAS DO GUERREIRO ::\n")
         rules = [
             "[OBJETIVO]: Derrotar o Senhor da Guerra. Se sua Vida cair a 0, você perde.",
@@ -72,9 +70,9 @@ class UI:
         for line in rules:
             print(line)
         input("\n[ENTER PARA VOLTAR]")
+        self.clear_screen()
 
     def display_bestiary(self, deck):
-        self.clear_screen()
         print(f"{'NOME':<20} | {'ARMA':<6} | {'REQUISITO':<20} | {'LOOT':<20}")
         print("-" * 80)
         for enemy in deck:
@@ -83,6 +81,7 @@ class UI:
             print(f"   > Efeito: {enemy.loot.effect_desc}")
             print("-" * 80)
         input("\n[ENTER PARA VOLTAR]")
+        self.clear_screen()
 
     def print_status(self, player):
         print(f"\nGUERREIRO: {player.name.upper()}")
