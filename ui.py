@@ -24,11 +24,15 @@ class UI:
         print("   > Vantagem Inicial: +1 DADO DE FÚRIA ")
         print("   > Lema: 'Eu vim aqui pra bater e comer pudim. E acabou o pudim.'")
         print("-" * 60)
-        print("2. [Gertrudes, Cobradora de Dívidas]")
+        print("2. [Jaiminho, Corpo Mole]")
+        print("   > Vantagem Inicial: +2 VIDA ")
+        print("   > Lema: 'É que eu quero evitar a fadiga.'")
+        print("-" * 60)
+        print("3. [Gertrudes, Cobradora de Dívidas]")
         print("   > Vantagem Inicial: +2 GLÓRIA ")
         print("   > Lema: 'Ninguém escapa do vencimento do boleto.'")
         print("-" * 60)
-        return input(">> Digite 1 ou 2 para selecionar: ")
+        return input(">> Digite 1, 2 ou 3 para selecionar: ")
 
     def print_dice(self, dice_list):
         symbols = [f"[{self.DICE_MAP[d]}]" for d in dice_list]
