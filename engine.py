@@ -235,3 +235,4 @@ class GameEngine:
                 else:
                     self.ui.print_message("Ataque falhou! Requisitos não atendidos.")
                     self.player.fury = 0 # Perde a fúria usada
+
