@@ -27,51 +27,56 @@ class Enemy:
         
 def create_deck():
     deck = []
-
+    
     # --- INIMIGOS COMUNS ---
+    
+    # [ALTERADO] Aljava: Agora reduz dano de arqueiros
     deck.append(Enemy("Besteiro Real", "bow", 2, "sum", 20, "Soma >= 20", 
-                      Loot("Aljava Sem Fim", "Custo de Glória para rerrolar reduzido em 1")))
-
+                      Loot("Aljava Sem Fim", "Inimigos Arqueiros causam -1 de Dano")))
+    
+    # [ALTERADO] Machado: Agora dá Fúria passiva
     deck.append(Enemy("Carrasco", "sword", 4, "full_house", 0, "Full House (AA-BBB)", 
-                      Loot("Machado de Verdugo", "+1 no valor de um dado (Custa 1 Vida)")))
-
+                      Loot("Machado de Verdugo", "+1 Fúria adicional na fase de Preparar")))
+                      
     deck.append(Enemy("Caçador Élfico", "bow", 2, "kind", 4, "Quadra (AAAA)", 
                       Loot("Capa de Esquiva", "Chance de esquivar ataque (Rerrolar defesa)")))
-
+                      
     deck.append(Enemy("Guarda do Portão", "spear", 3, "straight", 0, "Sequência (1-2-3-4-5)", 
                       Loot("Escudo de Torre", "Bloqueia totalmente 1 Ataque (Quebra ao usar)")))
-
+                      
     deck.append(Enemy("Bárbaro do Norte", "sword", 4, "mixed_pairs", 2, "Dois Pares (AA-BB)", 
                       Loot("Talismã da Fênix", "Renasce c/ 1 Vida ao morrer (Quebra ao usar)")))
-
+                      
     deck.append(Enemy("Cavaleiro Negro", "spear", 3, "kind", 3, "Trinca (AAA)", 
                       Loot("Armadura de Placas", "Reduz dano de Lanças em 1")))
-
+                      
+    # [ALTERADO] Bomba: Agora é item consumível de imunidade
     deck.append(Enemy("Ninja das Sombras", "sword", 2, "sum", 28, "Soma >= 28", 
-                      Loot("Bomba de Fumaça", "Troca Posição de Inimigos (Grátis)")))
-
+                      Loot("Bomba de Fumaça", "Imunidade TOTAL na Defesa (Quebra ao usar)")))
+                      
     deck.append(Enemy("General de Guerra", "bow", 3, "mixed_pairs", 3, "3 Pares (AA-BB-CC)", 
                       Loot("Estandarte de Guerra", "Começa turno com +1 Foco (Rerrolar 1)")))
 
+    # [ALTERADO] Ervas: Agora dá bônus fixo por dado 6
     deck.append(Enemy("Monge Renegado", "sword", 3, "all_odd", 0, "Todos Ímpares", 
-                      Loot("Ervas Medicinais", "Cura custa 5 dados (invés de 6)")))
-
+                      Loot("Ervas Medicinais", "Dados valor '6' curam +1 vida extra")))
+                      
+    # [ALTERADO] Engrenagem: Agora dá bônus fixo por dado 5
     deck.append(Enemy("Mestre de Cerco", "spear", 3, "all_even", 0, "Todos Pares", 
-                      Loot("Engrenagem Mestra", "Altera dado +/- 1 (Custa 1 Vida)")))
-
+                      Loot("Engrenagem Mestra", "Dados valor '5' geram +1 Glória extra")))
+                      
     deck.append(Enemy("Feiticeiro", "bow", 2, "exact_sum", 21, "Soma Exata 21", 
                       Loot("Amuleto de Proteção", "Imune a ataques de Longe se tiver Glória")))
-
+                      
     deck.append(Enemy("Gigante da Montanha", "sword", 5, "kind", 5, "Quina (AAAAA)", 
                       Loot("Manopla de Força", "Pares geram +1 Fúria extra")))
-
-    # Embaralha os inimigos comuns PRIMEIRO
+    
     random.shuffle(deck)
 
-    # --- BOSS (Sempre por último) ---
+    # --- BOSS ---
     boss = Enemy("O SENHOR DA GUERRA", "boss", 6, "boss_special", 0, "Trinca(6) + Trinca(1)", 
                  Loot("A Coroa do Rei", "Troféu Final"))
-
+    
     deck.append(boss)
 
     return deck
