@@ -35,9 +35,9 @@ def main():
 
             # Inicializa jogador com os bônus
             player = Player(name=player_name)
-            player.fury = start_fury
-            player.glory = start_glory
-            player.health = start_health
+            player.fury += start_fury
+            player.glory += start_glory
+            player.health += start_health
             
             deck = create_deck()
             engine = GameEngine(player, deck, ui)
