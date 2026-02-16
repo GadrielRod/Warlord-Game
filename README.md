@@ -10,3 +10,7 @@ Você pode jogar o Warlord diretamente no seu navegador através do OnlineGDB: h
 – Ao enfrentar o boss, a fase de preparação é anulada e passam a ter somente a fase de defesa e ataque.
 
 – Agora os jogadores podem escolher jogar com "Gertrudes, 'Cobradora de Dívidas'" ou "Bartolomeu, "'Mão de Alface'", ambos começam com uma vantagem diferente.
+
+#NOTAS DA NOVA ATUALIZAÇÃO 3.0
+
+- Foi adicionado o novo personagem Jaiminho.
