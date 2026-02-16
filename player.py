@@ -43,14 +43,11 @@ class Player:
         return None
 
     def heal(self, amount):
-        cost_per_hp = 6
-        if self.has_item("Ervas"):
-            cost_per_hp = 5
-        
-        real_heal = amount // cost_per_hp
-        if real_heal > 0:
-            self.health = min(self.max_health, self.health + real_heal)
-            return real_heal
+        # O calculo de "quantos HP curar" agora é feito na Engine.
+        # Este método apenas recebe o valor final e aplica.
+        if amount > 0:
+            self.health = min(self.max_health, self.health + amount)
+            return amount
         return 0
 
     def take_damage(self, amount):
