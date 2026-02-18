@@ -24,7 +24,7 @@ def main():
                 ui.print_message("Você escolheu BARTOLOMEU! Começa com +1 Fúria.")
             elif char_choice == '2':
                 player_name = "Jaiminho, 'Corpo Mole'"
-                start_health = 10
+                start_health = 2
                 ui.print_message("Você escolheu JAIMINHO! Começa com +2 de vida.")
             else:
                 player_name = "Gertrudes, a 'Cobradora de Dívidas'"
